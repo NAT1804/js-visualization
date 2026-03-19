@@ -1,3 +1,15 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+
+.highlight-current-line {
+  background-color: rgba(173, 214, 255, 0.3) !important;
+}
+
+.highlight-glyph {
+  background: #007acc;
+  border-radius: 50%;
+  width: 10px !important;
+  height: 10px !important;
+  margin-left: 5px;
+}

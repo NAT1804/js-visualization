@@ -1,13 +1,11 @@
-import { Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { NodeComponent } from './components/node/node.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NodeComponent],
-  templateUrl: './app.html',
-  styleUrl: './app.css',
+  imports: [RouterOutlet],
+  template: ` <router-outlet /> `,
+  styles: [``],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class App {
-  protected readonly title = signal('js-visualization');
-}
+export class App {}

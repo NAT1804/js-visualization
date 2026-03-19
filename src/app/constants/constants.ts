@@ -1,10 +1,3 @@
-export const PROMISE_STATE = {
-  PENDING: 'pending',
-  FULFILLED: 'fulfilled',
-  REJECTED: 'rejected',
-};
+export const ANONYMOUS_FUNCTION = 'anonymous function';
 
-export const MACROTASK_QUEUED = 'MACROTASK_QUEUED';
-export const MACROTASK_EXECUTED = 'MACROTASK_EXECUTED';
-export const CONSOLE_LOG = 'CONSOLE_LOG';
-export const ERROR = 'ERROR';
+export const DEFAULT_FUNCTION_NAME = 'function';

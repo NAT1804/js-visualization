@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { LoggingStore, LogLevel } from './logging.store';
-import { v4 as uuidv4 } from 'uuid';
+import { LoggingStore, LogLevel } from '../stores/logging.store';
+import { generateRandomId } from '../helpers/generate-random-id';
 
 @Injectable({ providedIn: 'root' })
 export class LoggingService {
@@ -9,7 +9,13 @@ export class LoggingService {
   log(level: LogLevel, message: string, error?: unknown): void {
     const timestamp = new Date().toISOString();
 
-    this.store.add({ id: uuidv4(), timestamp, level, message, error });
+    this.store.add({
+      id: generateRandomId(),
+      timestamp,
+      level,
+      message,
+      error,
+    });
 
     switch (level) {
       case 'error':
@@ -36,4 +42,3 @@ export class LoggingService {
     this.log('info', message, error);
   }
 }
-

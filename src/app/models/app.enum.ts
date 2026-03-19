@@ -1,0 +1,34 @@
+export enum LineStyle {
+  Solid = 'solid',
+  Dashed = 'dashed',
+  Dotted = 'dotted',
+}
+
+export enum LineCap {
+  Butt = 'butt',
+  Round = 'round',
+  Square = 'square',
+}
+
+export enum PROMISE_STATE {
+  IDLE = 'idle',
+  PENDING = 'pending',
+  FULFILLED = 'fulfilled',
+  REJECTED = 'rejected',
+}
+
+export enum EVENT_TYPE {
+  PROMISE_CREATED = 'PROMISE_CREATED',
+  PROMISE_UPDATE = 'PROMISE_UPDATE',
+  PROMISE_ERROR = 'PROMISE_ERROR',
+  PROMISE_REACTION_ADDED_RESOLVED = 'PROMISE_REACTION_ADDED_RESOLVED',
+  PROMISE_REACTION_ADDED_REJECTED = 'PROMISE_REACTION_ADDED_REJECTED',
+  PROMISE_REACTION_ADDED_FINALLY = 'PROMISE_REACTION_ADDED_FINALLY',
+
+  MACROTASK_QUEUED = 'MACROTASK_QUEUED',
+  MACROTASK_EXECUTED = 'MACROTASK_EXECUTED',
+
+  CONSOLE_LOG = 'CONSOLE_LOG',
+  TIMEOUT_ERROR = 'TIMEOUT_ERROR',
+  ERROR = 'ERROR',
+}
