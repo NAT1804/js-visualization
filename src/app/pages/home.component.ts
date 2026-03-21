@@ -1,8 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, signal, viewChild } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { EVENT_TYPE } from '@models/app.enum';
-import { IPromiseNodeConfig, WorkerEvent } from '@models/app.model';
-import { interval, take, tap } from 'rxjs';
 import { BaseComponent } from '../components/base/base.component';
 import { MonacoEditorComponent } from '../components/editor/editor.component';
 import { PromiseVisualizerComponent } from '../components/promise-visualizer/promise-visualizer.component';
@@ -19,23 +15,19 @@ import { LayoutComponent } from '../layouts/layout.component';
         (playSimulationEvent)="playSimulation()"
       ></app-editor>
 
-      <app-promise-visualizer [config]="promiseConfig()"></app-promise-visualizer>
+      @for (promise of promises(); track promise.id) {
+        <app-promise-visualizer [config]="promise"></app-promise-visualizer>
+      }
     </app-layout>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent extends BaseComponent {
   editor = viewChild<MonacoEditorComponent>('editor');
-
-  promiseConfig = computed(() => ({
-    state: this.visualizerStore.promiseState(),
-    result: this.visualizerStore.promiseResult(),
-    fulfilledReactions: this.visualizerStore.fulfilledReactions(),
-    rejectedReactions: this.visualizerStore.rejectedReactions(),
-    isHandlers: this.visualizerStore.isHandlers(),
-  }));
+  promises = computed(() => this.visualizerStore.promisesEntities());
 
   executeCode() {
+    this.visualizerStore.resetStore();
     this.visualizerStore.executeCode(this.editor()?.code() || '');
   }
 

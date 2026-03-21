@@ -1,17 +1,30 @@
 import { ANONYMOUS_FUNCTION } from '../constants/constants';
+import { generateRandomHexString } from '@helpers/generate-random-id';
 import { EVENT_TYPE, PROMISE_STATE } from '../models/app.enum';
+
+let pendingAsyncTasks = 0;
+let isSyncCodeDone = false;
 
 const originalSetTimeout = self.setTimeout;
 const originalConsoleLog = self.console.log;
 
+function checkAllTaskDone() {
+  if (pendingAsyncTasks === 0 && isSyncCodeDone) {
+    self.postMessage({ type: EVENT_TYPE.ALL_TASKS_DONE });
+  }
+}
+
 self.setTimeout = (callback: TimerHandler, delay?: number) => {
+  pendingAsyncTasks++;
   self.postMessage({ type: EVENT_TYPE.MACROTASK_QUEUED });
 
   return originalSetTimeout(() => {
+    pendingAsyncTasks--;
     self.postMessage({ type: EVENT_TYPE.MACROTASK_EXECUTED });
     if (typeof callback === 'function') {
       callback();
     }
+    checkAllTaskDone();
   }, delay);
 };
 
@@ -28,21 +41,23 @@ self.addEventListener('message', (event) => {
     execute();
   } catch (error) {
     self.postMessage({ type: EVENT_TYPE.ERROR, payload: error });
+  } finally {
+    isSyncCodeDone = true;
+    checkAllTaskDone();
   }
 });
 
-const OriginalPromise: typeof Promise<any> = self.Promise;
-let promiseCounter = 0;
+const OriginalPromise: typeof Promise<unknown> = self.Promise;
 
 class MockPromise extends OriginalPromise {
-  private _internalId: number;
+  private _internalId: string;
 
   constructor(
     executor: (resolve: (value: unknown) => void, reject: (reason: unknown) => void) => void,
   ) {
     let patchedResolve;
     let patchedReject;
-    const currentId = ++promiseCounter;
+    const currentId = generateRandomHexString();
 
     super((resolve, reject) => {
       patchedResolve = (value: unknown) => {

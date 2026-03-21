@@ -20,16 +20,11 @@ export interface INodeConfig {
   width?: string;
   height?: string;
   bgTitleColor?: string;
+  borderTitleColor?: string;
   bgContentColor?: string;
+  borderContentColor?: string;
   content?: string | TemplateRef<unknown>;
-}
-
-export interface IPromiseNodeConfig {
-  state?: PROMISE_STATE;
-  result?: unknown;
-  fulfilledReactions?: unknown[];
-  rejectedReactions?: unknown[];
-  isHandlers?: boolean;
+  isShaking?: boolean;
 }
 
 export interface WorkerEvent {

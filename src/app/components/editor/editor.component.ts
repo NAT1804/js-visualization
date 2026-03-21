@@ -1,18 +1,17 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  inject,
+  effect,
   input,
   model,
   OnInit,
   output,
   signal,
-  ViewEncapsulation,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { EditorComponent, MonacoEditorModule, NgxMonacoEditorConfig } from 'ngx-monaco-editor-v2';
-import { ButtonComponent } from '../common/button.component';
+import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { BaseComponent } from '../base/base.component';
+import { ButtonComponent } from '../common/button.component';
 
 declare const monaco: any;
 
@@ -26,9 +25,22 @@ declare const monaco: any;
       [(ngModel)]="code"
     ></ngx-monaco-editor>
     <div class="flex gap-2 self-end">
-      <app-button (click)="saveCode()">Save Code</app-button>
-      <app-button (click)="executeCode()"> Execute Code </app-button>
-      <app-button [disabled]="!visualizerStore.isExecuted()" (click)="playSimulation()"
+      <app-button
+        [disabled]="visualizerStore.isComputing() || visualizerStore.isPlayingVisualizer()"
+        (click)="saveCode()"
+        >Save Code</app-button
+      >
+      <app-button
+        [disabled]="visualizerStore.isComputing() || visualizerStore.isPlayingVisualizer()"
+        [loading]="visualizerStore.isComputing()"
+        (click)="executeCode()"
+      >
+        Execute Code
+      </app-button>
+      <app-button
+        [disabled]="!visualizerStore.isExecuted() || visualizerStore.isComputing()"
+        [loading]="visualizerStore.isPlayingVisualizer()"
+        (click)="playSimulation()"
         >Play Simulation</app-button
       >
     </div>
@@ -43,28 +55,37 @@ declare const monaco: any;
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None,
 })
 export class MonacoEditorComponent extends BaseComponent implements OnInit {
-  editorOptions = input<NgxMonacoEditorConfig>({
-    defaultOptions: {
-      glyphMargin: true,
-      lineNumbers: 'off',
-      minimap: {
-        enabled: false,
-      },
-      scrollBeyondLastLine: false,
-      scrollbar: {
-        alwaysConsumeMouseWheel: false,
-      },
+  editorOptions = input<any>({
+    glyphMargin: true,
+    lineNumbers: 'off',
+    minimap: {
+      enabled: false,
+    },
+    scrollBeyondLastLine: false,
+    scrollbar: {
+      alwaysConsumeMouseWheel: false,
     },
   });
+  onlyViewMode = input<boolean>(false);
   executeCodeEvent = output<void>();
   playSimulationEvent = output<void>();
 
   code = model<string>('');
   editorInstance = signal<any>(null);
   currentDecorations = signal<string[]>([]);
+
+  constructor() {
+    super();
+    effect(() => {
+      const currentHighlightBlock = this.visualizerStore.currentHighlightBlock();
+      const editor = this.editorInstance();
+      if (currentHighlightBlock && editor && typeof monaco !== 'undefined') {
+        this.highlightBlock(currentHighlightBlock);
+      }
+    });
+  }
 
   ngOnInit(): void {
     const savedCode = localStorage.getItem('code');
@@ -83,23 +104,62 @@ export class MonacoEditorComponent extends BaseComponent implements OnInit {
 
     if (!editor) return;
 
-    this.currentDecorations = editor.deltaDecorations(decorations, [
-      {
-        range: new monaco.Range(lineNumber, 1, lineNumber, 1),
-        options: {
-          isWholeLine: true,
-          className: 'highlight-current-line',
-          glyphMarginClassName: 'highlight-glyph',
+    this.currentDecorations.set(
+      editor.deltaDecorations(decorations, [
+        {
+          range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+          options: {
+            isWholeLine: true,
+            className: 'highlight-current-line',
+            glyphMarginClassName: 'highlight-glyph',
+          },
         },
-      },
-    ]);
+      ]),
+    );
+  }
+
+  highlightBlock(codeBlock: string) {
+    const editor = this.editorInstance();
+    const decorations = this.currentDecorations();
+    if (!editor || typeof monaco === 'undefined' || !codeBlock) return;
+
+    const model = editor.getModel();
+    const fullCode = model.getValue();
+
+    const startIndex = fullCode.indexOf(codeBlock);
+
+    if (startIndex === -1) {
+      return;
+    }
+
+    const endIndex = startIndex + codeBlock.length;
+
+    const startPos = model.getPositionAt(startIndex);
+    const endPos = model.getPositionAt(endIndex);
+
+    this.currentDecorations.set(
+      editor.deltaDecorations(decorations, [
+        {
+          range: new monaco.Range(
+            startPos.lineNumber,
+            startPos.column,
+            endPos.lineNumber,
+            endPos.column,
+          ),
+          options: {
+            inlineClassName: 'highlight-code-block',
+            isWholeLine: false,
+          },
+        },
+      ]),
+    );
   }
 
   clearHighlight() {
     const editor = this.editorInstance();
     const decorations = this.currentDecorations();
     if (editor) {
-      this.currentDecorations = editor.deltaDecorations(decorations, []);
+      this.currentDecorations.set(editor.deltaDecorations(decorations, []));
     }
   }
 

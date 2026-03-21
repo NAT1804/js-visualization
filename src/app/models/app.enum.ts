@@ -11,7 +11,6 @@ export enum LineCap {
 }
 
 export enum PROMISE_STATE {
-  IDLE = 'idle',
   PENDING = 'pending',
   FULFILLED = 'fulfilled',
   REJECTED = 'rejected',
@@ -31,4 +30,6 @@ export enum EVENT_TYPE {
   CONSOLE_LOG = 'CONSOLE_LOG',
   TIMEOUT_ERROR = 'TIMEOUT_ERROR',
   ERROR = 'ERROR',
+
+  ALL_TASKS_DONE = 'ALL_TASKS_DONE',
 }
